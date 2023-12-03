@@ -17,6 +17,14 @@ In the root of the project, there are the following files
 - highres.jpg: The image used for testing
 - CMakeLists.txt: file for the compilation with make command
 
+# Observations
+- The application uses pgm (for grayscale images) and ppm (for color images). By default, the file name of the input file is in.pgm and in.ppm respectively.
+- The image will be necessary to convert it to ppm/pgm format (you can use convert in linux): 
+```
+convert highres.jpg in.pgm
+```
+- The executable requires the input files in.pgm and in.ppm and generates the processed files out_hsl.ppm and out_yuv.ppm. No input parameters are required.
+
 # Environment
 The test are executed in a linux environment. It's important to have installed the libraries for c++ compilation.
 
