@@ -1,4 +1,4 @@
-# ContrastEnhacement
+# Contrast Enhacement
 Contrast enhancement is a common operation in image processing. It is a useful method for the processing of scientific images, such as X-ray images or satellite images. It is also a useful technique for enhancing detail in photographs that are over- or underexposed. Based on that, the objective of this work is to develop a contrast enhancement application using acceleration over MPI and OpenMP.
 
 It's important to mention that the operation will be tested with a gray-scale and color-scale image.
