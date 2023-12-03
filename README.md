@@ -24,7 +24,7 @@ The test are executed in a linux environment. It's important to have installed t
 This project is part is activities carried out in the Subject "High computing performance" thaught in the Computer Science Master Program in the University Carlos III de Madrid.
 
 # Authors
-David Santiago Garcia Chicangana
-Frank
-Fredy
-Sebastian cruz
+- David Santiago Garcia Chicangana
+- Frank
+- Fredy
+- Sebastian cruz
