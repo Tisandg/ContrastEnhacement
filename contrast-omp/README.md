@@ -6,7 +6,7 @@
 
 To compile the files:
 ```
-g++ -fopenmp contrast.cpp contrast-enhancement.cpp histogram-equalization.cpp -o test1
+g++ -fopenmp contrast-omp.cpp contrast-enhancement.cpp histogram-equalization.cpp -o test1
 ```
 
 To run in windows:
