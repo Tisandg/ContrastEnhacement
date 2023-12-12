@@ -29,7 +29,7 @@ int main(int argc, char** argv){
 
     printf("Running contrast enhancement for gray-scale images.\n");
     if (rank == 0) {
-        printf("Readin in.pgm by process [%d]", rank)    
+        printf("Readin in.pgm by process [%d]", rank);
         img_ibuf_g = read_pgm("in.pgm");
     }
 
@@ -37,13 +37,13 @@ int main(int argc, char** argv){
     MPI_Bcast(&img_ibuf_g.w, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&img_ibuf_g.h, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    printf("Number of process: %d", size)
+    printf("Number of process: %d", size);
 
     run_cpu_gray_test(local_img);
 
     // Only the root process (rank 0) needs to perform cleanup
     if (rank == 0) {
-        free_pgm(img_ibuf_g);
+        free_pgm_original(img_ibuf_g);
     }
     
     
@@ -93,7 +93,7 @@ void run_cpu_color_test(PPM_IMG img_in)
 
 void run_cpu_gray_test(PGM_IMG img_in)
 {
-    PGM_IMG img_obuf;
+    PGM_IMG* img_obuf;
     
     time_t start_test = time(nullptr);
     printf("Starting CPU processing...\n");
@@ -211,17 +211,21 @@ PGM_IMG read_pgm(const char * path){
     return result;
 }
 
-void write_pgm(PGM_IMG img, const char * path){
+void write_pgm(PGM_IMG* img, const char * path){
     FILE * out_file;
     out_file = fopen(path, "wb");
     fprintf(out_file, "P5\n");
-    fprintf(out_file, "%d %d\n255\n",img.w, img.h);
-    fwrite(img.img,sizeof(unsigned char), img.w*img.h, out_file);
+    fprintf(out_file, "%d %d\n255\n",img->w, img->h);
+    fwrite(img->img,sizeof(unsigned char), img->w*img->h, out_file);
     fclose(out_file);
 }
 
-void free_pgm(PGM_IMG img)
+void free_pgm(PGM_IMG* img)
+{
+    free(img->img);
+}
+
+void free_pgm_original(PGM_IMG img)
 {
     free(img.img);
 }
-

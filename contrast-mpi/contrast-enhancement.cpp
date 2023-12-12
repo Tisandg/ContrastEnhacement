@@ -4,7 +4,7 @@
 #include "hist-equ.h"
 #include <mpi.h>
 
-PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
+PGM_IMG* contrast_enhancement_g(PGM_IMG img_in)
 {
     // MPI variables
     int rank, size;
@@ -44,7 +44,7 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
                 result->img, local_width * img_in.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
     
     int hist[256];
-    histogram(hist, result->img, result->w*result.h, 256);
+    histogram(hist, result->img, result->w*result->h, 256);
 
     // Use MPI functions to gather local histograms to a global histogram
     int global_hist[256 * size];
@@ -65,7 +65,7 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
 
         // Apply histogram equalization to the local image portion
         // histogram_equalization(local_img, local_img, final_hist, local_size, 256);
-        histogram_equalization(result->img,img_in.img,final_hist,local.width*img_in.h, 256);
+        histogram_equalization(result->img, img_in.img, final_hist, result->w*result->h, 256);
 
         // Gather processed image data to the root process
         // MPI_Gather(result.img, result.w*result.h, MPI_UNSIGNED_CHAR, img_in.img, result.w*result.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
@@ -73,7 +73,6 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
         MPI_Gather(result->img, local_width * img_in.h, MPI_UNSIGNED_CHAR,
                    img_in.img, local_width * img_in.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
     }
-    
     
     // histogram_equalization(result.img,img_in.img,hist,result.w*result.h, 256);
     return result;
