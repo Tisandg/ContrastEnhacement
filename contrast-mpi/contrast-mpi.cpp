@@ -39,7 +39,7 @@ int main(int argc, char** argv){
 
     printf("Number of process: %d", size);
 
-    run_cpu_gray_test(local_img);
+    run_cpu_gray_test(img_ibuf_g);
 
     // Only the root process (rank 0) needs to perform cleanup
     if (rank == 0) {
@@ -211,21 +211,16 @@ PGM_IMG read_pgm(const char * path){
     return result;
 }
 
-void write_pgm(PGM_IMG* img, const char * path){
+void write_pgm(PGM_IMG img, const char * path){
     FILE * out_file;
     out_file = fopen(path, "wb");
     fprintf(out_file, "P5\n");
-    fprintf(out_file, "%d %d\n255\n",img->w, img->h);
-    fwrite(img->img,sizeof(unsigned char), img->w*img->h, out_file);
+    fprintf(out_file, "%d %d\n255\n",img.w, img.h);
+    fwrite(img.img,sizeof(unsigned char), img.w*img.h, out_file);
     fclose(out_file);
 }
 
-void free_pgm(PGM_IMG* img)
-{
-    free(img->img);
-}
-
-void free_pgm_original(PGM_IMG img)
+void free_pgm(PGM_IMG img)
 {
     free(img.img);
 }
