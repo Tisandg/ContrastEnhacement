@@ -127,6 +127,7 @@ PPM_IMG read_ppm(const char * path){
     
     fread(ibuf,sizeof(unsigned char), 3 * result.w*result.h, in_file);
 
+    #pragma omp parallel for shared(result, ibuf)
     for(i = 0; i < result.w*result.h; i ++){
         result.img_r[i] = ibuf[3*i + 0];
         result.img_g[i] = ibuf[3*i + 1];
@@ -145,6 +146,7 @@ void write_ppm(PPM_IMG img, const char * path){
     
     char * obuf = (char *)malloc(3 * img.w * img.h * sizeof(char));
 
+    #pragma omp parallel for private(i) shared(img, obuf)
     for(i = 0; i < img.w*img.h; i ++){
         obuf[3*i + 0] = img.img_r[i];
         obuf[3*i + 1] = img.img_g[i];

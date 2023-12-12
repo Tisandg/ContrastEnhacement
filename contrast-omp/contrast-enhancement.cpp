@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "hist-equ.h"
 
 PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
@@ -101,7 +102,8 @@ HSL_IMG rgb2hsl(PPM_IMG img_in)
     img_out.h = (float *)malloc(img_in.w * img_in.h * sizeof(float));
     img_out.s = (float *)malloc(img_in.w * img_in.h * sizeof(float));
     img_out.l = (unsigned char *)malloc(img_in.w * img_in.h * sizeof(unsigned char));
-    
+
+    #pragma omp parallel for private(i, H, S, L) shared(img_in, img_out)
     for(i = 0; i < img_in.w*img_in.h; i ++){
         
         float var_r = ( (float)img_in.img_r[i]/255 );//Convert RGB to [0,1]
@@ -178,7 +180,8 @@ PPM_IMG hsl2rgb(HSL_IMG img_in)
     result.img_r = (unsigned char *)malloc(result.w * result.h * sizeof(unsigned char));
     result.img_g = (unsigned char *)malloc(result.w * result.h * sizeof(unsigned char));
     result.img_b = (unsigned char *)malloc(result.w * result.h * sizeof(unsigned char));
-    
+
+    #pragma omp parallel for private(i) shared(img_in, result)
     for(i = 0; i < img_in.width*img_in.height; i ++){
         float H = img_in.h[i];
         float S = img_in.s[i];
@@ -228,6 +231,7 @@ YUV_IMG rgb2yuv(PPM_IMG img_in)
     img_out.img_u = (unsigned char *)malloc(sizeof(unsigned char)*img_out.w*img_out.h);
     img_out.img_v = (unsigned char *)malloc(sizeof(unsigned char)*img_out.w*img_out.h);
 
+    #pragma omp parallel for private(r, g, b, y, cb, cr) shared(img_in, img_out)
     for(i = 0; i < img_out.w*img_out.h; i ++){
         r = img_in.img_r[i];
         g = img_in.img_g[i];
@@ -270,6 +274,7 @@ PPM_IMG yuv2rgb(YUV_IMG img_in)
     img_out.img_g = (unsigned char *)malloc(sizeof(unsigned char)*img_out.w*img_out.h);
     img_out.img_b = (unsigned char *)malloc(sizeof(unsigned char)*img_out.w*img_out.h);
 
+    #pragma omp parallel for private(y, cb, cr, rt, gt, bt) shared(img_in, img_out)
     for(i = 0; i < img_out.w*img_out.h; i ++){
         y  = (int)img_in.img_y[i];
         cb = (int)img_in.img_u[i] - 128;
