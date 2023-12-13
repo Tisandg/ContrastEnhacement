@@ -8,7 +8,6 @@
 void run_cpu_color_test(PPM_IMG img_in);
 void run_cpu_gray_test(PGM_IMG img_in);
 
-
 int main(){
     PGM_IMG img_ibuf_g;
     PPM_IMG img_ibuf_c;

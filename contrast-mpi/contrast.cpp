@@ -8,42 +8,41 @@
 void run_cpu_color_test(PPM_IMG img_in);
 void run_cpu_gray_test(PGM_IMG img_in);
 
-int main(int argc, char** argv){
-    int mpi_init_result;
-    MPI_Init(&argc, &argv);
-    MPI_Initialized(&mpi_init_result);
-    if (!mpi_init_result) {
-        fprintf(stderr, "MPI initialization failed.\n");
-        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-    }
+int main(int argc, char *argv[] ){
+
+    MPI_Init( &argc, &argv );
 
     // MPI variables
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    printf("Number of process: %d", size);
 
     PGM_IMG img_ibuf_g;
     PPM_IMG img_ibuf_c;
-    
-    time_t start = time(nullptr);
+    // time_t start = time(nullptr);
 
     printf("Running contrast enhancement for gray-scale images.\n");
     if (rank == 0) {
         printf("Readin in.pgm by process [%d]", rank);
         img_ibuf_g = read_pgm("in.pgm");
+
+        // Broadcast image dimensions to all processes
+        MPI_Bcast(&img_ibuf_g.w, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&img_ibuf_g.h, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
-    // Broadcast image dimensions to all processes
-    MPI_Bcast(&img_ibuf_g.w, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&img_ibuf_g.h, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    // Ensure all processes reach this point before proceeding
+    // This is to assure the process 0 had executed the broadcast.
+    // All processes wait at this point until the broadcast is completed
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    printf("Number of process: %d", size);
-
+    //All process will execute this
     run_cpu_gray_test(img_ibuf_g);
 
     // Only the root process (rank 0) needs to perform cleanup
     if (rank == 0) {
-        free_pgm_original(img_ibuf_g);
+        free_pgm(img_ibuf_g);
     }
     
     
@@ -52,9 +51,9 @@ int main(int argc, char** argv){
     // run_cpu_color_test(img_ibuf_c);
     // free_ppm(img_ibuf_c);
 
-    time_t end = time(nullptr);
-    double seconds = difftime(end, start);
-    printf("Overall processing time: %f (seconds)\n", seconds /* TIMER */ );
+    // time_t end = time(nullptr);
+    // double seconds = difftime(end, start);
+    // printf("Overall processing time: %f (seconds)\n", seconds /* TIMER */ );
 
     MPI_Finalize();
     return 0;
@@ -90,25 +89,24 @@ void run_cpu_color_test(PPM_IMG img_in)
     printf("Color test processing time: %f (sec)\n", seconds_test);
 }
 
-
 void run_cpu_gray_test(PGM_IMG img_in)
 {
-    PGM_IMG* img_obuf;
+    PGM_IMG img_obuf;
     
-    time_t start_test = time(nullptr);
+    // time_t start_test = time(nullptr);
     printf("Starting CPU processing...\n");
     
     img_obuf = contrast_enhancement_g(img_in);
-    time_t end_gray = time(nullptr);
-    double seconds_gray = difftime(end_gray, start_test);
-    printf("Gray processing time: %f (sec)\n", seconds_gray);
+    // time_t end_gray = time(nullptr);
+    // double seconds_gray = difftime(end_gray, start_test);
+    // printf("Gray processing time: %f (sec)\n", seconds_gray);
     
     write_pgm(img_obuf, "out.pgm");
     free_pgm(img_obuf);
 
-    time_t end_test = time(nullptr);
-    double seconds_test = difftime(end_test, start_test);
-    printf("Gray test processing time: %f (sec)\n", seconds_test);
+    // time_t end_test = time(nullptr);
+    // double seconds_test = difftime(end_test, start_test);
+    // printf("Gray test processing time: %f (sec)\n", seconds_test);
 }
 
 

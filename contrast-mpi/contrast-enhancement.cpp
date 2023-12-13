@@ -4,47 +4,35 @@
 #include "hist-equ.h"
 #include <mpi.h>
 
-PGM_IMG* contrast_enhancement_g(PGM_IMG img_in)
+PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
 {
+
     // MPI variables
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+    PGM_IMG result;
+    result.w = img_in.w;
+    result.h = img_in.h;
+    result.img = (unsigned char *)malloc(result.w * result.h * sizeof(unsigned char));
+
     // Calculate local portion of the image for each process
     int local_width = img_in.w / size;
-    //int local_size = local_width * img_in.h;
-
-    // PGM_IMG global_result;
-    // global_result.w = img_in.w;
-    // global_result.h = img_in.h;
-    // global_result.img = (unsigned char *)malloc(global_result.w * global_result.h * sizeof(unsigned char));
-
-    PGM_IMG* result = nullptr;
-
-    // Allocate memory for local result for non-root processes
-    if (rank != 0) {
-        result = (PGM_IMG*)malloc(sizeof(PGM_IMG));
-        result->w = local_width;
-        result->h = img_in.h;
-        result->img = (unsigned char*)malloc(result->w * result->h * sizeof(unsigned char));
-    }
-
-    // result.w = local_width;
-    // result.h = img_in.h;
-    // result.img = (unsigned char *)malloc(result.w * result.h * sizeof(unsigned char));
+    int local_size = local_width * img_in.h;
 
     // Allocate memory for local image portion
-    // unsigned char *local_img = (unsigned char *)malloc(local_size * sizeof(unsigned char));
+    unsigned char *local_img = (unsigned char *)malloc(local_size * sizeof(unsigned char));
 
     // Scatter image data to all processes
-    // MPI_Scatter(img_in.img, result.w*result.h, MPI_UNSIGNED_CHAR, result.img, result.w*result.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    int process_sender = 0;
+    MPI_Scatter(img_in.img, local_size, MPI_UNSIGNED_CHAR, local_img, local_size, MPI_UNSIGNED_CHAR, process_sender, MPI_COMM_WORLD);
 
-    MPI_Scatter(img_in.img, local_width * img_in.h, MPI_UNSIGNED_CHAR,
-                result->img, local_width * img_in.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-    
+    //After MPI_Scatter call, each process will have its own `local_img` array containing the portion of the image that it needs to process
+
+    // Parallel histogram calculation
     int hist[256];
-    histogram(hist, result->img, result->w*result->h, 256);
+    histogram(hist, local_img, local_size, 256);
 
     // Use MPI functions to gather local histograms to a global histogram
     int global_hist[256 * size];
@@ -61,19 +49,10 @@ PGM_IMG* contrast_enhancement_g(PGM_IMG img_in)
         }
 
         // Continue with other processing steps (e.g., histogram equalization)
-        // ...
-
-        // Apply histogram equalization to the local image portion
-        // histogram_equalization(local_img, local_img, final_hist, local_size, 256);
-        histogram_equalization(result->img, img_in.img, final_hist, result->w*result->h, 256);
-
-        // Gather processed image data to the root process
-        // MPI_Gather(result.img, result.w*result.h, MPI_UNSIGNED_CHAR, img_in.img, result.w*result.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-
-        MPI_Gather(result->img, local_width * img_in.h, MPI_UNSIGNED_CHAR,
-                   img_in.img, local_width * img_in.h, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+        histogram_equalization(result.img, img_in.img, final_hist, img_in.w * img_in.h, 256);
     }
-    
+
+
     // histogram_equalization(result.img,img_in.img,hist,result.w*result.h, 256);
     return result;
 }
