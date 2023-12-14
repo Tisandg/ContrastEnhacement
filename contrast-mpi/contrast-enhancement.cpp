@@ -11,7 +11,10 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    
+    int global_hist[256*size];
 
+    printf("Size in  [%d] contrast enhancement: %d\n", rank, size);
     PGM_IMG result;
     result.w = img_in.w;
     result.h = img_in.h;
@@ -34,9 +37,13 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
     int hist[256];
     histogram(hist, local_img, local_size, 256);
 
+    printf("Process %d complete histogram calculations \n", rank);
+
     // Use MPI functions to gather local histograms to a global histogram
-    int global_hist[256 * size];
+//    int global_hist[256 * size];
     MPI_Gather(hist, 256, MPI_INT, global_hist, 256, MPI_INT, 0, MPI_COMM_WORLD);
+
+    printf("Information gathered\n [%d]", rank);
 
     // Only the root process (rank 0) needs to perform the final steps
     if (rank == 0) {
@@ -50,6 +57,7 @@ PGM_IMG contrast_enhancement_g(PGM_IMG img_in)
 
         // Continue with other processing steps (e.g., histogram equalization)
         histogram_equalization(result.img, img_in.img, final_hist, img_in.w * img_in.h, 256);
+        printf("\nHistogram equalization done by process [%d]", rank);
     }
 
 

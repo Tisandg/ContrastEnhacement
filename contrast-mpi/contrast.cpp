@@ -16,21 +16,20 @@ int main(int argc, char *argv[] ){
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    printf("Number of process: %d", size);
 
     PGM_IMG img_ibuf_g;
     PPM_IMG img_ibuf_c;
     // time_t start = time(nullptr);
 
-    printf("Running contrast enhancement for gray-scale images.\n");
     if (rank == 0) {
-        printf("Readin in.pgm by process [%d]", rank);
+        printf("Number of process: %d\n", size);
+        printf("Readin in.pgm by process [%d]\n", rank);
         img_ibuf_g = read_pgm("in.pgm");
-
-        // Broadcast image dimensions to all processes
-        MPI_Bcast(&img_ibuf_g.w, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&img_ibuf_g.h, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
+
+    // Broadcast image dimensions to all processes
+    MPI_Bcast(&img_ibuf_g.w, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&img_ibuf_g.h, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     // Ensure all processes reach this point before proceeding
     // This is to assure the process 0 had executed the broadcast.
@@ -38,6 +37,7 @@ int main(int argc, char *argv[] ){
     MPI_Barrier(MPI_COMM_WORLD);
 
     //All process will execute this
+    printf("Running [%d] for contrast enhancement for gray-scale images.\n", rank);
     run_cpu_gray_test(img_ibuf_g);
 
     // Only the root process (rank 0) needs to perform cleanup
