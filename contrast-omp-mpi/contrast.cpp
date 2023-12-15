@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
     //Just checking then max threads and the number of them defined for the execution
     int max_threads = omp_get_max_threads();
     printf("Max number of threads: %d\n", max_threads);
-    #pragma omp parallel
+#pragma omp parallel
     {
-        #pragma omp master
+#pragma omp master
         {
             printf("Number of threads: %d\n", omp_get_num_threads());
         }
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
     // Tiempo total de ejecución
     end_time_total = MPI_Wtime();
-    double localTime = start_time_total - end_time_total;
+    double localTime =  end_time_total - start_time_total;
 
     MPI_Reduce(&localTime, &maxTime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
@@ -107,7 +107,7 @@ void run_cpu_gray_test(const char * path)
     PGM_IMG img_obuf = contrast_enhancement_g(img_in);
 
     double end_gray = MPI_Wtime();
-    double localTimeGray = start_test - end_gray;
+    double localTimeGray = end_gray - start_test;
 
     MPI_Reduce(&localTimeGray, &maxLocalTimeGray, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
@@ -122,7 +122,7 @@ void run_cpu_gray_test(const char * path)
     }
 
     double end_test = MPI_Wtime();
-    double localTimeTest = start_test - end_test;
+    double localTimeTest = end_test - start_test;
 
     MPI_Reduce(&localTimeTest, &maxLocalTimeTest, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
